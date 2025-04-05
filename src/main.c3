@@ -5,7 +5,7 @@ import std::io;
 
 const int SCREEN_WIDTH = 1600;
 const int SCREEN_HEIGHT = 1000;
-
+const int FPS = 30;
 
 macro @addVec2(Vector2 #vec1, Vector2 vec2) {
 	#vec1.x += vec2.x;
@@ -15,7 +15,6 @@ macro @addVec2(Vector2 #vec1, Vector2 vec2) {
 fn int main()
 {
 	rl::initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Gravity simulation");
-	rl::setTargetFPS(30);
 
 	Planet[*] all_planets = {{
 			.mass = 3000,
@@ -30,19 +29,42 @@ fn int main()
 			.drawTrail = true,
 		},
 	};
+	rl::setTargetFPS(FPS);
+
+	float zoom_duration = 1.0f;
+	float zoom_speed @noinit;
+	float scaling = 1.0;
+	float next_scaling = scaling;
 
 	while(!rl::windowShouldClose()) {
-		rl::clearBackground(rl::BLACK);
+		KeyboardKey pressed_key = (KeyboardKey) rl::getKeyPressed();
+		if (pressed_key >= rl::KEY_ZERO && pressed_key <= rl::KEY_NINE) {
+			pressed_key -= rl::KEY_ZERO;
+			bring_back(current_config, (int) pressed_key);
+		}
+		if (rl::isKeyPressed(rl::KEY_EQUAL)) {
+			next_scaling *= 1.1;
+		} else if (rl::isKeyPressed(rl::KEY_MINUS)) {
+			next_scaling *= 0.9;
+		}
+
+		zoom_speed = 1.0f - math::pow(0.001f, rl::getFrameTime() / zoom_duration);
+		scaling += (next_scaling - scaling) * zoom_speed;
+		scaling = math::clamp(scaling, 0.01f, 100.0f);
+		if (math::abs(next_scaling - scaling) < 0.001f) {
+			scaling = next_scaling;
+		}
 
 		update_planets(&all_planets);
 
 		// -- Drawing --
+		rl::clearBackground(rl::BLACK);
 		rl::beginDrawing();
 
 		rl::drawFPS(0, 0);
 
 		foreach(&planet: all_planets) {
-			draw_planet(planet);
+			draw_planet(planet, scaling);
 		}
 
 		rl::endDrawing();

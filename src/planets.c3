@@ -15,11 +15,11 @@ struct Planet {
 	bool drawTrail;
 }
 
-macro uint get_entity_radius(Planet* planet) {
-	return 2 * math::max((uint) (planet.mass / 200), 4u);
+macro uint get_entity_radius(Planet* planet, scaling) {
+	return 2 * math::max((uint) (planet.mass * scaling / 600), 4u);
 }
 
-macro draw_planet(Planet* planet) {
+macro draw_planet(Planet* planet, float scaling) {
 	Vector2 translated_pos @noinit;
 
 	if (planet.drawTrail) {
@@ -30,6 +30,10 @@ macro draw_planet(Planet* planet) {
 		for(ushort t = 0; t < 256; t++) {
 			idx = trS - (char) t;
 			translated_pos = planet.trail[idx];
+
+			translated_pos.x *= scaling;
+			translated_pos.y *= scaling;
+
 			@addVec2(translated_pos, {
 				(float) rl::getScreenWidth() / 2,
 				(float) rl::getScreenHeight() / 2
@@ -39,12 +43,16 @@ macro draw_planet(Planet* planet) {
 		}
 	}
 	translated_pos = planet.position;
+
+	translated_pos.x *= scaling;
+	translated_pos.y *= scaling;
+
 	@addVec2(translated_pos, {
 		(float) rl::getScreenWidth() / 2,
 		(float) rl::getScreenHeight() / 2
 	});
 
-	rl::drawCircleV(translated_pos, get_entity_radius(planet), planet.color);
+	rl::drawCircleV(translated_pos, get_entity_radius(planet, scaling), planet.color);
 }
 
 macro Vector2 get_gravity_vector(Planet p1, Planet p2) {
