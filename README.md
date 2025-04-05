@@ -19,5 +19,5 @@ git clone https://github.com/BWindey/PlanetSim.git
 
 And `c3c run` inside the project. If everything goes well, you should see
 something like this:
-[!images/preview.png]
+![Screenshot from the running program](./images/preview.png)
 
