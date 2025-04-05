@@ -3,8 +3,6 @@ import raylib5::rl;
 import std::math;
 import std::io;
 
-const float GRAVITY_CONSTANT = 9.8;
-
 struct Planet {
 	uint mass;
 	Vector2 position;
@@ -55,13 +53,13 @@ macro draw_planet(Planet* planet, float scaling) {
 	rl::drawCircleV(translated_pos, get_entity_radius(planet, scaling), planet.color);
 }
 
-macro Vector2 get_gravity_vector(Planet p1, Planet p2) {
+macro Vector2 get_gravity_vector(Planet p1, Planet p2, float gravity_constant) {
 	float dx = p2.position.x - p1.position.x;
 	float dy = p2.position.y - p1.position.y;
 	float distance_square = dx * dx + dy * dy;
 	float distance = math::sqrt(distance_square);
 
-	float gravity_scalar = GRAVITY_CONSTANT * p1.mass * p2.mass / distance_square;
+	float gravity_scalar = gravity_constant * p1.mass * p2.mass / distance_square;
 
 	return {
 		.x = dx * gravity_scalar / distance,
@@ -69,10 +67,14 @@ macro Vector2 get_gravity_vector(Planet p1, Planet p2) {
 	};
 }
 
-fn void update_planets(Planet[] planets) {
+fn void update_planets(Configuration config) {
+	Planet[] planets = config.planets;
+
 	for (uint i = 0; i < planets.len; i++) {
 		for (uint j = i + 1; j < planets.len; j++) {
-			Vector2 gravity_force = get_gravity_vector(planets[i], planets[j]);
+			Vector2 gravity_force = get_gravity_vector(
+				planets[i], planets[j], config.gravity_constant
+			);
 			Vector2 acceleration = {
 				.x = gravity_force.x / planets[i].mass,
 				.y = gravity_force.y / planets[i].mass,

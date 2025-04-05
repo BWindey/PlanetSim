@@ -15,22 +15,9 @@ macro @addVec2(Vector2 #vec1, Vector2 vec2) {
 fn int main()
 {
 	rl::initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Gravity simulation");
-
-	Planet[*] all_planets = {{
-			.mass = 3000,
-			.position = {0, 0},
-			.velocity = {0, 0},
-			.color = rl::GOLD,
-		}, {
-			.mass = 1,
-			.position = {350, 0},
-			.velocity = {0, 10},
-			.color = rl::PINK,
-			.drawTrail = true,
-		},
-	};
 	rl::setTargetFPS(FPS);
 
+	Configuration current_config = config1;
 	float zoom_duration = 1.0f;
 	float zoom_speed @noinit;
 	float scaling = 1.0;
@@ -55,7 +42,7 @@ fn int main()
 			scaling = next_scaling;
 		}
 
-		update_planets(&all_planets);
+		update_planets(current_config);
 
 		// -- Drawing --
 		rl::clearBackground(rl::BLACK);
@@ -63,7 +50,7 @@ fn int main()
 
 		rl::drawFPS(0, 0);
 
-		foreach(&planet: all_planets) {
+		foreach(&planet: current_config.planets) {
 			draw_planet(planet, scaling);
 		}
 
