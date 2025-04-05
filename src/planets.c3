@@ -93,3 +93,20 @@ fn void update_planets(Configuration config) {
 	}
 }
 
+
+fn void bring_back(Configuration config, int num) {
+	if (num < 0 || num >= config.planets.len) {
+		return;
+	}
+	Vector2 translate = config.planets[num].position;
+	translate.x = -translate.x;
+	translate.y = -translate.y;
+
+	foreach(&planet: config.planets) {
+		@addVec2(planet.position, translate);
+		foreach(&trail: planet.trail) {
+			@addVec2(*trail, translate);
+		}
+	}
+}
+
