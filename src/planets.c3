@@ -19,25 +19,46 @@ macro uint get_entity_radius(Planet* planet, scaling) {
 
 macro draw_planet(Planet* planet, float scaling, float[<2>] origin) {
 	float[<2>] translated_pos @noinit;
+	float[<2>] p1 @noinit;
+	float[<2>] p2 @noinit;
+
+	float screen_width = rl::getScreenWidth();
+	float screen_height = rl::getScreenHeight();
+	float[<2>] screen_translation = { screen_width / 2, screen_height / 2 };
 
 	if (planet.drawTrail) {
 		char trS = planet.trailStart;
-		char idx @noinit;
+		char idx1 @noinit;
+		char idx2 @noinit;
 		Color trailColor = planet.color;
 
-		for(ushort t = 0; t < 256; t++) {
-			idx = trS - (char) t;
-			translated_pos = (planet.trail[idx] - origin) * scaling;
-			translated_pos.x += (float) rl::getScreenWidth() / 2;
-			translated_pos.y += (float) rl::getScreenHeight() / 2;
+		// Draw first line from planet to trail[trailStart]
+		p1 = (planet.position - origin) * scaling;
+		p2 = (planet.trail[trS] - origin) * scaling;
 
-			rl::drawCircleV(translated_pos.to_rl(), 2, trailColor);
+		p1 += screen_translation;
+		p2 += screen_translation;
+
+		rl::drawLineV(p1.to_rl(), p2.to_rl(), trailColor);
+
+		// Draw lines between all trail points
+		for(ushort t = 1; t < 256; t++) {
 			trailColor.a--;
+
+			idx1 = trS - (char) (t-1);
+			idx2 = trS - (char) t;
+
+			p1 = (planet.trail[idx1] - origin) * scaling;
+			p2 = (planet.trail[idx2] - origin) * scaling;
+
+			p1 += screen_translation;
+			p2 += screen_translation;
+
+			rl::drawLineV(p1.to_rl(), p2.to_rl(), trailColor);
 		}
 	}
 	translated_pos = (planet.position - origin) * scaling;
-	translated_pos.x += (float) rl::getScreenWidth() / 2;
-	translated_pos.y += (float) rl::getScreenHeight() / 2;
+	translated_pos += screen_translation;
 
 	rl::drawCircleV(
 		translated_pos.to_rl(),
@@ -48,7 +69,7 @@ macro draw_planet(Planet* planet, float scaling, float[<2>] origin) {
 
 macro float[<2>] get_gravity_vector(Planet p1, Planet p2, float gravity_constant) {
 	float[<2>] d = p2.position - p1.position;
-	float distance_square = d.x * d.x + d.y * d.y;
+	float distance_square = math::max(d.x * d.x + d.y * d.y, 1e-8f);
 	float distance = math::sqrt(distance_square);
 
 	float gravity_scalar = gravity_constant * p1.mass * p2.mass / distance_square;
