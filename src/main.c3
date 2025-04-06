@@ -1,7 +1,6 @@
 module gravity_sim;
 import raylib5::rl;
 import std::math;
-import std::io;
 
 const int SCREEN_WIDTH = 1600;
 const int SCREEN_HEIGHT = 1000;
@@ -53,7 +52,9 @@ fn int main()
 	float next_scaling = scaling;
 
 	float[<2>] origin;
-	bool f3_menu = true;
+	bool f3_menu = false;
+
+	Background stars = generate_stars();
 
 	while(!rl::windowShouldClose()) {
 		@checkAndHandleKeyPress(next_scaling, current_config, origin, f3_menu);
@@ -70,6 +71,9 @@ fn int main()
 		// -- Drawing --
 		rl::clearBackground(rl::BLACK);
 		rl::beginDrawing();
+
+		draw_background(&stars);
+
 
 		if (f3_menu) {
 			rl::drawFPS(0, 0);
