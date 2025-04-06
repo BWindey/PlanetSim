@@ -7,12 +7,22 @@ const int SCREEN_WIDTH = 1600;
 const int SCREEN_HEIGHT = 1000;
 const int FPS = 30;
 
-macro @addVec2(Vector2 #vec1, Vector2 vec2) {
-	#vec1.x += vec2.x;
-	#vec1.y += vec2.y;
-}
-
 macro Vector2 float[<2>].to_rl(self) => { ...self  };
+
+macro void @checkAndHandleKeyPress(#next_scaling, #current_config) {
+	KeyboardKey pressed_key = (KeyboardKey) rl::getKeyPressed();
+	if (pressed_key >= rl::KEY_ZERO && pressed_key <= rl::KEY_NINE) {
+		pressed_key -= rl::KEY_ZERO;
+		bring_back(#current_config, (int) pressed_key);
+	}
+	if (rl::isKeyPressed(rl::KEY_EQUAL)) {
+		#next_scaling *= 1.1;
+		#next_scaling = math::clamp(#next_scaling, 0.001f, 10.0f);
+	} else if (rl::isKeyPressed(rl::KEY_MINUS)) {
+		#next_scaling *= 0.9;
+		#next_scaling = math::clamp(#next_scaling, 0.001f, 10.0f);
+	}
+}
 
 fn int main()
 {
@@ -26,18 +36,7 @@ fn int main()
 	float next_scaling = scaling;
 
 	while(!rl::windowShouldClose()) {
-		KeyboardKey pressed_key = (KeyboardKey) rl::getKeyPressed();
-		if (pressed_key >= rl::KEY_ZERO && pressed_key <= rl::KEY_NINE) {
-			pressed_key -= rl::KEY_ZERO;
-			bring_back(current_config, (int) pressed_key);
-		}
-		if (rl::isKeyPressed(rl::KEY_EQUAL)) {
-			next_scaling *= 1.1;
-			next_scaling = math::clamp(next_scaling, 0.001f, 10.0f);
-		} else if (rl::isKeyPressed(rl::KEY_MINUS)) {
-			next_scaling *= 0.9;
-			next_scaling = math::clamp(next_scaling, 0.001f, 10.0f);
-		}
+		@checkAndHandleKeyPress(next_scaling, current_config);
 
 		zoom_speed = 1.0f - math::pow(0.001f, rl::getFrameTime() / zoom_duration);
 		scaling += (next_scaling - scaling) * zoom_speed;
