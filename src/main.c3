@@ -9,7 +9,9 @@ const int FPS = 30;
 
 macro Vector2 float[<2>].to_rl(self) => { ...self  };
 
-macro void @checkAndHandleKeyPress(#next_scaling, #current_config, #origin) {
+macro void @checkAndHandleKeyPress(
+	#next_scaling, #current_config, #origin, #f3_menu
+) {
 	KeyboardKey pressed_key = (KeyboardKey) rl::getKeyPressed();
 	if (pressed_key >= rl::KEY_ZERO && pressed_key <= rl::KEY_NINE) {
 		pressed_key -= rl::KEY_ZERO;
@@ -32,6 +34,10 @@ macro void @checkAndHandleKeyPress(#next_scaling, #current_config, #origin) {
 		#current_config.focus_on_planet = false;
 		#origin = { 0, 0 };
 	}
+	// Toggle F3 menu
+	if (rl::isKeyPressed(rl::KEY_F3)) {
+		#f3_menu = !#f3_menu;
+	}
 }
 
 fn int main()
@@ -47,9 +53,10 @@ fn int main()
 	float next_scaling = scaling;
 
 	float[<2>] origin;
+	bool f3_menu = true;
 
 	while(!rl::windowShouldClose()) {
-		@checkAndHandleKeyPress(next_scaling, current_config, origin);
+		@checkAndHandleKeyPress(next_scaling, current_config, origin, f3_menu);
 
 		zoom_speed = 1.0f - math::pow(0.001f, rl::getFrameTime() / zoom_duration);
 		scaling += (next_scaling - scaling) * zoom_speed;
@@ -64,9 +71,11 @@ fn int main()
 		rl::clearBackground(rl::BLACK);
 		rl::beginDrawing();
 
-		rl::drawFPS(0, 0);
-		rl::drawText(rl::textFormat("Scaling: %02.05f", scaling), 0, 20, 20, rl::GREEN);
-		rl::drawText(rl::textFormat("Origin: {%03.02f, %03.02f}", ...origin), 0, 40, 20, rl::GREEN);
+		if (f3_menu) {
+			rl::drawFPS(0, 0);
+			rl::drawText(rl::textFormat("Scaling: %02.05f", scaling), 0, 20, 20, rl::GREEN);
+			rl::drawText(rl::textFormat("Origin: {%03.02f, %03.02f}", ...origin), 0, 40, 20, rl::GREEN);
+		}
 
 		foreach(&planet: current_config.planets) {
 			draw_planet(planet, scaling, origin);
