@@ -4,10 +4,16 @@ import raylib5::rl;
 struct Configuration {
 	float gravity_constant;
 	Planet[] planets;
-	uint central_planet;
 }
 
 Planet[*] planets1 = {
+	{
+		.mass = 10000,
+		.position = { 0, 0 },
+		.velocity = { 0, 0 },
+		.color = rl::RED,
+		.drawTrail = true,
+	},
 	{
 		.mass = 4,
 		.position = { 0, 200 },
@@ -22,19 +28,11 @@ Planet[*] planets1 = {
 		.color = rl::BLUE,
 		.drawTrail = true,
 	},
-	{
-		.mass = 10000,
-		.position = { 0, 0 },
-		.velocity = { 0, 0 },
-		.color = rl::RED,
-		.drawTrail = true,
-	},
 };
 
 Configuration config1 = {
 	.gravity_constant = 9,
 	.planets = &planets1,
-	.central_planet = 3,
 };
 
 Planet[*] planets2 = {
@@ -71,5 +69,4 @@ Planet[*] planets2 = {
 Configuration config2 = {
 	.gravity_constant = 8,
 	.planets = &planets2,
-	.central_planet = 1,
 };
