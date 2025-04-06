@@ -5,10 +5,10 @@ import std::io;
 
 struct Planet {
 	uint mass;
-	Vector2 position;
-	Vector2 velocity;
+	float[<2>] position;
+	float[<2>] velocity;
 	Color color;
-	Vector2[256] trail;
+	float[<2>][256] trail;
 	char trailStart;
 	bool drawTrail;
 }
@@ -18,7 +18,7 @@ macro uint get_entity_radius(Planet* planet, scaling) {
 }
 
 macro draw_planet(Planet* planet, float scaling) {
-	Vector2 translated_pos @noinit;
+	float[<2>] translated_pos @noinit;
 
 	if (planet.drawTrail) {
 		char trS = planet.trailStart;
@@ -27,69 +27,54 @@ macro draw_planet(Planet* planet, float scaling) {
 
 		for(ushort t = 0; t < 256; t++) {
 			idx = trS - (char) t;
-			translated_pos = planet.trail[idx];
+			translated_pos = planet.trail[idx] * scaling;
+			translated_pos.x += (float) rl::getScreenWidth() / 2;
+			translated_pos.y += (float) rl::getScreenHeight() / 2;
 
-			translated_pos.x *= scaling;
-			translated_pos.y *= scaling;
-
-			@addVec2(translated_pos, {
-				(float) rl::getScreenWidth() / 2,
-				(float) rl::getScreenHeight() / 2
-			});
-			rl::drawCircleV(translated_pos, 2, trailColor);
+			rl::drawCircleV(translated_pos.to_rl(), 2, trailColor);
 			trailColor.a--;
 		}
 	}
-	translated_pos = planet.position;
+	translated_pos = planet.position * scaling;
+	translated_pos.x += (float) rl::getScreenWidth() / 2;
+	translated_pos.y += (float) rl::getScreenHeight() / 2;
 
-	translated_pos.x *= scaling;
-	translated_pos.y *= scaling;
-
-	@addVec2(translated_pos, {
-		(float) rl::getScreenWidth() / 2,
-		(float) rl::getScreenHeight() / 2
-	});
-
-	rl::drawCircleV(translated_pos, get_entity_radius(planet, scaling), planet.color);
+	rl::drawCircleV(
+		translated_pos.to_rl(),
+		get_entity_radius(planet, scaling),
+		planet.color
+	);
 }
 
-macro Vector2 get_gravity_vector(Planet p1, Planet p2, float gravity_constant) {
-	float dx = p2.position.x - p1.position.x;
-	float dy = p2.position.y - p1.position.y;
-	float distance_square = dx * dx + dy * dy;
+macro float[<2>] get_gravity_vector(Planet p1, Planet p2, float gravity_constant) {
+	float[<2>] d = p2.position - p1.position;
+	float distance_square = d.x * d.x + d.y * d.y;
 	float distance = math::sqrt(distance_square);
 
 	float gravity_scalar = gravity_constant * p1.mass * p2.mass / distance_square;
 
-	return {
-		.x = dx * gravity_scalar / distance,
-		.y = dy * gravity_scalar / distance
-	};
+	return d * gravity_scalar / distance;
 }
 
 fn void update_planets(Configuration config) {
 	Planet[] planets = config.planets;
+	float[<2>] gravity_force, acceleration;
 
 	for (uint i = 0; i < planets.len; i++) {
 		for (uint j = i + 1; j < planets.len; j++) {
-			Vector2 gravity_force = get_gravity_vector(
+			gravity_force = get_gravity_vector(
 				planets[i], planets[j], config.gravity_constant
 			);
-			Vector2 acceleration = {
-				.x = gravity_force.x / planets[i].mass,
-				.y = gravity_force.y / planets[i].mass,
-			};
-			@addVec2(planets[i].velocity, acceleration);
+			acceleration = gravity_force / planets[i].mass;
+			planets[i].velocity += acceleration;
 
 			// Update for planet[j]
-			acceleration.x = -gravity_force.x / planets[j].mass;
-			acceleration.y = -gravity_force.y / planets[j].mass;
-
-			@addVec2(planets[j].velocity, acceleration);
+			acceleration = -gravity_force / planets[j].mass;
+			planets[j].velocity += acceleration;
 		}
 		planets[i].trailStart++;
 		planets[i].trail[planets[i].trailStart] = planets[i].position;
-		@addVec2(planets[i].position, planets[i].velocity);
+		planets[i].position += planets[i].velocity;
 	}
 }
 
@@ -98,14 +83,12 @@ fn void bring_back(Configuration config, int num) {
 	if (num < 0 || num >= config.planets.len) {
 		return;
 	}
-	Vector2 translate = config.planets[num].position;
-	translate.x = -translate.x;
-	translate.y = -translate.y;
+	float[<2>] translate = -config.planets[num].position;
 
 	foreach(&planet: config.planets) {
-		@addVec2(planet.position, translate);
+		planet.position += translate;
 		foreach(&trail: planet.trail) {
-			@addVec2(*trail, translate);
+			*trail += translate;
 		}
 	}
 }

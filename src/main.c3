@@ -12,12 +12,14 @@ macro @addVec2(Vector2 #vec1, Vector2 vec2) {
 	#vec1.y += vec2.y;
 }
 
+macro Vector2 float[<2>].to_rl(self) => { ...self  };
+
 fn int main()
 {
 	rl::initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Gravity simulation");
 	rl::setTargetFPS(FPS);
 
-	Configuration current_config = config1;
+	Configuration current_config = config2;
 	float zoom_duration = 1.0f;
 	float zoom_speed @noinit;
 	float scaling = 1.0;
