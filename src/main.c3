@@ -9,11 +9,11 @@ const int FPS = 30;
 
 macro Vector2 float[<2>].to_rl(self) => { ...self  };
 
-macro void @checkAndHandleKeyPress(#next_scaling, #current_config) {
+macro void @checkAndHandleKeyPress(#next_scaling, #current_config, #origin) {
 	KeyboardKey pressed_key = (KeyboardKey) rl::getKeyPressed();
 	if (pressed_key >= rl::KEY_ZERO && pressed_key <= rl::KEY_NINE) {
 		pressed_key -= rl::KEY_ZERO;
-		bring_back(#current_config, (int) pressed_key);
+		@move_focus(#current_config, (int) pressed_key);
 	}
 	if (rl::isKeyPressed(rl::KEY_EQUAL)) {
 		#next_scaling *= 1.1;
@@ -21,6 +21,16 @@ macro void @checkAndHandleKeyPress(#next_scaling, #current_config) {
 	} else if (rl::isKeyPressed(rl::KEY_MINUS)) {
 		#next_scaling *= 0.9;
 		#next_scaling = math::clamp(#next_scaling, 0.001f, 10.0f);
+	}
+
+	// Toggle watching planets
+	if (rl::isKeyPressed(rl::KEY_T)) {
+		#current_config.focus_on_planet = !#current_config.focus_on_planet;
+	}
+	// Reset origin to zero and disable focus
+	if (rl::isKeyPressed(rl::KEY_Z)) {
+		#current_config.focus_on_planet = false;
+		#origin = { 0, 0 };
 	}
 }
 
@@ -30,13 +40,16 @@ fn int main()
 	rl::setTargetFPS(FPS);
 
 	Configuration current_config = config2;
+
 	float zoom_duration = 1.0f;
 	float zoom_speed @noinit;
 	float scaling = 1.0;
 	float next_scaling = scaling;
 
+	float[<2>] origin;
+
 	while(!rl::windowShouldClose()) {
-		@checkAndHandleKeyPress(next_scaling, current_config);
+		@checkAndHandleKeyPress(next_scaling, current_config, origin);
 
 		zoom_speed = 1.0f - math::pow(0.001f, rl::getFrameTime() / zoom_duration);
 		scaling += (next_scaling - scaling) * zoom_speed;
@@ -45,7 +58,7 @@ fn int main()
 			scaling = next_scaling;
 		}
 
-		update_planets(current_config);
+		update_planets(current_config, &origin);
 
 		// -- Drawing --
 		rl::clearBackground(rl::BLACK);
@@ -53,9 +66,10 @@ fn int main()
 
 		rl::drawFPS(0, 0);
 		rl::drawText(rl::textFormat("Scaling: %02.05f", scaling), 0, 20, 20, rl::GREEN);
+		rl::drawText(rl::textFormat("Origin: {%03.02f, %03.02f}", ...origin), 0, 40, 20, rl::GREEN);
 
 		foreach(&planet: current_config.planets) {
-			draw_planet(planet, scaling);
+			draw_planet(planet, scaling, origin);
 		}
 
 		rl::endDrawing();

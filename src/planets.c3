@@ -17,7 +17,7 @@ macro uint get_entity_radius(Planet* planet, scaling) {
 	return 2 * math::max((uint) (planet.mass * scaling / 600), 4u);
 }
 
-macro draw_planet(Planet* planet, float scaling) {
+macro draw_planet(Planet* planet, float scaling, float[<2>] origin) {
 	float[<2>] translated_pos @noinit;
 
 	if (planet.drawTrail) {
@@ -27,7 +27,7 @@ macro draw_planet(Planet* planet, float scaling) {
 
 		for(ushort t = 0; t < 256; t++) {
 			idx = trS - (char) t;
-			translated_pos = planet.trail[idx] * scaling;
+			translated_pos = (planet.trail[idx] - origin) * scaling;
 			translated_pos.x += (float) rl::getScreenWidth() / 2;
 			translated_pos.y += (float) rl::getScreenHeight() / 2;
 
@@ -35,7 +35,7 @@ macro draw_planet(Planet* planet, float scaling) {
 			trailColor.a--;
 		}
 	}
-	translated_pos = planet.position * scaling;
+	translated_pos = (planet.position - origin) * scaling;
 	translated_pos.x += (float) rl::getScreenWidth() / 2;
 	translated_pos.y += (float) rl::getScreenHeight() / 2;
 
@@ -56,7 +56,7 @@ macro float[<2>] get_gravity_vector(Planet p1, Planet p2, float gravity_constant
 	return d * gravity_scalar / distance;
 }
 
-fn void update_planets(Configuration config) {
+fn void update_planets(Configuration config, float[<2>]* origin) {
 	Planet[] planets = config.planets;
 	float[<2>] gravity_force, acceleration;
 
@@ -76,20 +76,18 @@ fn void update_planets(Configuration config) {
 		planets[i].trail[planets[i].trailStart] = planets[i].position;
 		planets[i].position += planets[i].velocity;
 	}
+
+	if (config.focus_on_planet) {
+		*origin = planets[config.focus_index].position;
+	}
 }
 
 
-fn void bring_back(Configuration config, int num) {
-	if (num < 0 || num >= config.planets.len) {
+macro @move_focus(Configuration #config, int num) {
+	if (num < 0 || num >= #config.planets.len) {
 		return;
 	}
-	float[<2>] translate = -config.planets[num].position;
 
-	foreach(&planet: config.planets) {
-		planet.position += translate;
-		foreach(&trail: planet.trail) {
-			*trail += translate;
-		}
-	}
+	#config.focus_index = num;
 }
 

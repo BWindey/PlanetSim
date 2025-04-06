@@ -3,6 +3,8 @@ import raylib5::rl;
 
 struct Configuration {
 	float gravity_constant;
+	bool focus_on_planet;
+	int focus_index;
 	Planet[] planets;
 }
 
@@ -32,6 +34,8 @@ Planet[*] planets1 = {
 
 Configuration config1 = {
 	.gravity_constant = 9,
+	.focus_on_planet = true,
+	.focus_index = 0,
 	.planets = &planets1,
 };
 
@@ -68,5 +72,7 @@ Planet[*] planets2 = {
 
 Configuration config2 = {
 	.gravity_constant = 8,
+	.focus_on_planet = true,
+	.focus_index = 0,
 	.planets = &planets2,
 };
