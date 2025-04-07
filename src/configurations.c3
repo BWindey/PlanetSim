@@ -8,6 +8,16 @@ struct Configuration {
 	Planet[] planets;
 }
 
+macro float[<2>][256] create_initial_trail(float[<2>] $position) {
+	float[<2>][256] $trail;
+
+	$for var $c = 0; $c < 256; $c++:
+		$trail[$c] = $position;
+	$endfor
+
+	return $trail;
+}
+
 Planet[*] planets1 = {
 	{
 		.mass = 10000,
@@ -15,6 +25,7 @@ Planet[*] planets1 = {
 		.velocity = { 0, 0 },
 		.color = rl::RED,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 0, 0 }),
 	},
 	{
 		.mass = 4,
@@ -22,6 +33,7 @@ Planet[*] planets1 = {
 		.velocity = { -25, -4 },
 		.color = rl::GREEN,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 0, 200 }),
 	},
 	{
 		.mass = 40,
@@ -29,6 +41,7 @@ Planet[*] planets1 = {
 		.velocity = { 25, 4 },
 		.color = rl::BLUE,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 0, -200 }),
 	},
 };
 
@@ -46,6 +59,7 @@ Planet[*] planets2 = {
 		.velocity = { 0, 0 },
 		.color = rl::RED,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 0, 0 }),
 	},
 	{
 		.mass = 9,
@@ -53,6 +67,7 @@ Planet[*] planets2 = {
 		.velocity = { 0, 25 },
 		.color = rl::BLUE,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 150, 0 }),
 	},
 	{
 		.mass = 29,
@@ -60,6 +75,7 @@ Planet[*] planets2 = {
 		.velocity = { 0, 17 },
 		.color = rl::PURPLE,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 340, 0 }),
 	},
 	{
 		.mass = 60,
@@ -67,6 +83,7 @@ Planet[*] planets2 = {
 		.velocity = { 0, 15 },
 		.color = rl::MAGENTA,
 		.drawTrail = true,
+		.trail = create_initial_trail({ 450, 0 }),
 	},
 };
 
