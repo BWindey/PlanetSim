@@ -17,35 +17,6 @@ macro uint get_entity_radius(Planet* planet, scaling) {
 	return 2 * math::max((uint) (planet.mass * scaling / 600), 4u);
 }
 
-macro bool is_completely_offscreen(
-	Planet* planet, float width, float height, float scaling, float[<2>] origin
-) {
-	float[<2>] screen_translation = { width / 2, height / 2 };
-	float[<2>] pos = (planet.position - origin) * scaling + screen_translation;
-
-	bool planet_offscreen =
-		pos.x < -width / 2
-		|| pos.x > width * 1.5
-		|| pos.y < -height / 2
-		|| pos.y > height * 1.5;
-
-	float[<2>] midtrail = (planet.trail[128] - origin) * scaling + screen_translation;
-	bool midtrail_offscreen =
-		midtrail.x < -width / 2
-		|| midtrail.x > width * 1.5
-		|| midtrail.y < -height / 2
-		|| midtrail.y > height * 1.5;
-
-	float[<2>] endtrail = (planet.trail[255] - origin) * scaling + screen_translation;
-	bool endtrail_offscreen =
-		endtrail.x < -width / 2
-		|| midtrail.x > width * 1.5
-		|| midtrail.y < -height / 2
-		|| midtrail.y > height * 1.5;
-
-	return planet_offscreen && midtrail_offscreen && endtrail_offscreen;
-}
-
 macro draw_planet(Planet* planet, float scaling, float[<2>] origin) {
 	float[<2>] translated_pos @noinit;
 	float[<2>] p1 @noinit;
@@ -54,10 +25,6 @@ macro draw_planet(Planet* planet, float scaling, float[<2>] origin) {
 	float screen_width = rl::getScreenWidth();
 	float screen_height = rl::getScreenHeight();
 	float[<2>] screen_translation = { screen_width / 2, screen_height / 2 };
-
-	if (is_completely_offscreen(planet, screen_width, screen_height, scaling, origin)) {
-		return;
-	}
 
 	if (planet.drawTrail) {
 		char trS = planet.trailStart;
