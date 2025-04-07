@@ -42,7 +42,10 @@ fn Background generate_stars() {
 }
 
 fn void draw_background(Background* stars) {
-	foreach (star: stars) {
+	foreach (&star: stars) {
+		if (rl::getRandomValue(0, 20) == 0) {
+			star.color.a += (char) rl::getRandomValue(-4, 4);
+		}
 		rl::drawPixel(...star.position, star.color);
 	}
 }
