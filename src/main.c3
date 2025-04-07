@@ -5,6 +5,7 @@ import std::math;
 const int SCREEN_WIDTH = 1600;
 const int SCREEN_HEIGHT = 1000;
 const int FPS = 30;
+const int SIMULATED_FPS = 1;
 
 macro Vector2 float[<2>].to_rl(self) => { ...self  };
 
